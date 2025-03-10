@@ -9,14 +9,10 @@ pub fn main() !void {
 
     defer file.close();
 
-    var c = CPU.init();
+    const allocator = std.heap.page_allocator;
+    var c = CPU.init(allocator);
+    defer c.deinit(allocator, &c);
     // Read the entire file into memory
-    const read_bytes = try file.readAll(&memory);
-
-    while (c.pc < read_bytes) {
-        // Fetch the next opcode
-        const opcode = memory[c.pc];
-        c.pc += 1;
-        c.executeInstruction(&memory, opcode);
-    }
+    _ = c.load_cartridge("test-roms/first/first.bin");
+    c.emulate();
 }
